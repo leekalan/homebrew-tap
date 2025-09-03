@@ -30,10 +30,9 @@ jobs:
       - name: Fetch latest release from leekalan/spike-spy
         id: fetch_release
         run: |
-          RELEASE_INFO=$(curl -s https://api.github.com/repos/leekalan/spike-spy/releases/latest)
-          echo "$RELEASE_INFO" > release.json
-          RELEASE_TAG=$(jq -r .tag_name release.json)
-          TARBALL_URL=$(jq -r .tarball_url release.json)
+          RELEASE_TAG=$(curl -s https://api.github.com/repos/leekalan/spike-spy/releases/latest \
+            | jq -r .tag_name)
+          TARBALL_URL="https://github.com/leekalan/spike-spy/archive/refs/tags/${RELEASE_TAG}.tar.gz"
           echo "RELEASE_TAG=$RELEASE_TAG" >> $GITHUB_ENV
           echo "TARBALL_URL=$TARBALL_URL" >> $GITHUB_ENV
 
@@ -46,7 +45,7 @@ jobs:
       - name: Update Formula file
         run: |
           FORMULA="Formula/spike-spy.rb"
-          sed -i "s|url \".*\"|url \"https://github.com/leekalan/spike-spy/archive/refs/tags/${RELEASE_TAG}.tar.gz\"|g" $FORMULA
+          sed -i "s|url \".*\"|url \"${TARBALL_URL}\"|g" $FORMULA
           sed -i "s|sha256 \".*\"|sha256 \"${SHA256}\"|g" $FORMULA
           sed -i "s|version \".*\"|version \"${RELEASE_TAG#v}\"|g" $FORMULA || true
 
