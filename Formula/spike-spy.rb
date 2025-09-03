@@ -2,7 +2,7 @@ class SpikeSpy < Formula
   desc "Tool for analyzing CPU usage spikes"
   homepage "https://github.com/leekalan/spike-spy"
   url "https://github.com/leekalan/spike-spy/archive/refs/tags/v0.2.0.tar.gz"
-  sha256 "4133c3e2f5708354b92d1a0ea14ea310a49eaacd859155441b0040ffc18f02f6"
+  sha256 "fbc1f9d54e98c924d6329e4072a6c9c48d2591ec37c66fa0523b0c9034bbade6"
   license "MIT"
 
   head "https://github.com/leekalan/spike-spy.git", branch: "main"
