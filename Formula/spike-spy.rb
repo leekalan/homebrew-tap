@@ -5,6 +5,8 @@ class SpikeSpy < Formula
   sha256 "f98427c6201726fbaf2330415740f481bc470938aa1d79ad903a476c3034a33b"
   license "MIT"
 
+  head "https://github.com/leekalan/spike-spy.git", branch: "main"
+
   depends_on "rust" => :build
 
   def install

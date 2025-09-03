@@ -1,0 +1,58 @@
+name: Update SpikeSpy Formula
+
+on:
+  repository_dispatch:
+    types: [spike-spy-release]
+
+jobs:
+  update-formula:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Homebrew Tap
+        uses: actions/checkout@v3
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y curl jq
+
+      - name: Fetch latest release from leekalan/spike-spy
+        id: fetch_release
+        run: |
+          RELEASE_INFO=$(curl -s https://api.github.com/repos/leekalan/spike-spy/releases/latest)
+          echo "$RELEASE_INFO" > release.json
+          RELEASE_TAG=$(jq -r .tag_name release.json)
+          TARBALL_URL=$(jq -r .tarball_url release.json)
+          echo "RELEASE_TAG=$RELEASE_TAG" >> $GITHUB_ENV
+          echo "TARBALL_URL=$TARBALL_URL" >> $GITHUB_ENV
+
+      - name: Download tarball and calculate SHA256
+        run: |
+          curl -L -o spike-spy.tar.gz "$TARBALL_URL"
+          SHA256=$(sha256sum spike-spy.tar.gz | cut -d' ' -f1)
+          echo "SHA256=$SHA256" >> $GITHUB_ENV
+
+      - name: Update Formula file
+        run: |
+          FORMULA="Formula/spike-spy.rb"
+          sed -i "s|url \".*\"|url \"https://github.com/leekalan/spike-spy/archive/refs/tags/${RELEASE_TAG}.tar.gz\"|g" $FORMULA
+          sed -i "s|sha256 \".*\"|sha256 \"${SHA256}\"|g" $FORMULA
+          sed -i "s|version \".*\"|version \"${RELEASE_TAG#v}\"|g" $FORMULA || true
+
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Formula/spike-spy.rb
+          git commit -m "Update spike-spy formula to ${RELEASE_TAG}" || echo "No changes to commit"
+
+      - name: Push changes
+        uses: ad-m/github-push-action@v0.6.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: main
