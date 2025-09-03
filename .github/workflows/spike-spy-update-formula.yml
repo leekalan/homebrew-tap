@@ -3,7 +3,7 @@ name: Update SpikeSpy Formula
 on:
   push:
     branches:
-      - master
+      - main
   repository_dispatch:
     types: [spike-spy-release]
 
